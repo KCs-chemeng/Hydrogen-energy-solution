@@ -1,0 +1,4 @@
+# Validated on Python 3.12.14 / Linux. For other versions use requirements.txt.
+numpy==2.5.4
+openpyxl==3.1.5
+et-xmlfile==2.0.0

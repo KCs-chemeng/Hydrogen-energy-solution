@@ -13,6 +13,12 @@ if errorlevel 1 goto fail
 .venv\Scripts\python.exe -m ensurepip --upgrade
 .venv\Scripts\python.exe -m pip install -r requirements.txt
 if errorlevel 1 goto fail
+.venv\Scripts\python.exe -m pip check
+if errorlevel 1 goto fail
+.venv\Scripts\python.exe -c "import tkinter; print('Tk', tkinter.TkVersion)"
+if errorlevel 1 goto fail
+.venv\Scripts\python.exe -m unittest test_core test_v2 -v
+if errorlevel 1 goto fail
 echo Installation complete. Run start.bat.
 pause
 exit /b 0

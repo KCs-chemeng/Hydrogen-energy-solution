@@ -11,32 +11,25 @@ from excel_io import read_excel,write_excel,COLS,DATES
 BG='#f1f5f9';NAVY='#15304c';BLUE='#1261cb';GREEN='#05976d';MUTED='#64748b'
 BASE=Path(__file__).resolve().parent
 DATA=Path(os.environ.get('LOCALAPPDATA',str(Path.home())))/'ProjectScheduleLab';DATA.mkdir(parents=True,exist_ok=True)
-class Store:
-    def __init__(self,path):
-        self.db=sqlite3.connect(path)
-        self.db.execute('CREATE TABLE IF NOT EXISTS events (seq INTEGER PRIMARY KEY, created TEXT, pj TEXT, kind TEXT, reason TEXT, payload TEXT)')
-        self.db.commit()
-    def add(self,p,kind,reason,result=None):
-        payload={'project':p,'summary':result};self.db.execute('INSERT INTO events(created,pj,kind,reason,payload) VALUES(?,?,?,?,?)',(datetime.now().isoformat(timespec='seconds'),p['id'],kind,reason,json.dumps(payload,ensure_ascii=False)));self.db.commit()
-    def rows(self):return self.db.execute('SELECT seq,created,pj,kind,reason FROM events ORDER BY seq DESC LIMIT 300').fetchall()
-    def get(self,seq):return json.loads(self.db.execute('SELECT payload FROM events WHERE seq=?',(seq,)).fetchone()[0])
-class App(tk.Tk):
+from storage import Store
+from model import canonical
+from ui_v2 import Workflows
+class App(Workflows,tk.Tk):
     def __init__(self):
         super().__init__();self.title('공정표 | Project Schedule Lab v'+VERSION);self.geometry('1500x900');self.minsize(1100,680);self.configure(bg=BG)
         self.option_add('*Font',('맑은 고딕',10));self.style=ttk.Style(self);self.style.theme_use('clam')
         self.style.configure('.',font=('맑은 고딕',10));self.style.configure('TFrame',background=BG);self.style.configure('TLabel',background=BG,foreground=NAVY);self.style.configure('TButton',padding=(12,7),background='#ffffff',foreground=NAVY);self.style.map('TButton',background=[('active','#dbeafe')]);self.style.configure('Primary.TButton',background=BLUE,foreground='white');self.style.configure('Treeview',rowheight=32,background='white',fieldbackground='white',borderwidth=0);self.style.configure('Treeview.Heading',background='#e8eef5',foreground=NAVY,padding=9);self.style.map('Treeview',background=[('selected','#dbeafe')],foreground=[('selected',NAVY)]);self.style.configure('TNotebook.Tab',padding=(24,12))
         self.store=Store(DATA/'history.sqlite3');self.p=demo();self.result=None;self.busy=False;self.events=queue.Queue();self.cancel=threading.Event();self.collapsed=set();self.rowids={};self.source_path=None
-        previous=self.store.rows()
-        if previous:
-            try:self.p=self.store.get(previous[0][0])['project']
-            except Exception:pass
+        previous=self.store.projects()
+        self.p=self.store.load(previous[0][0]) if previous else canonical(self.p)
+        if not previous:self.store.add(self.p,'프로젝트 생성','초기 예제')
         self.protocol('WM_DELETE_WINDOW',self.close)
-        self.build();self.sync();self.after(100,self.poll)
+        self.build();self.build_v2();self.sync();self.poll_id=self.after(100,self.poll)
     def build(self):
         header=tk.Frame(self,bg=NAVY,height=70);header.pack(fill='x');header.pack_propagate(False)
         tk.Label(header,text='▥  공정표',font=('맑은 고딕',21,'bold'),bg=NAVY,fg='white').pack(side='left',padx=24)
         tk.Label(header,text='PROJECT SCHEDULE LAB   /   PYTHON DESKTOP',font=('Segoe UI',10),bg=NAVY,fg='#b6c9dd').pack(side='left')
-        tk.Label(header,text='v0.1.0  초안',bg=NAVY,fg='#98e1c6').pack(side='right',padx=25)
+        tk.Label(header,text='v'+VERSION,bg=NAVY,fg='#98e1c6').pack(side='right',padx=25)
         self.toolbar=ttk.Frame(self,padding=(18,12));self.toolbar.pack(fill='x');self.buttons=[]
         for title,cmd in [('엑셀 가져오기',self.import_file),('입력·결과 엑셀 내보내기',self.export_file),('공통 243개 WBS',self.common),('예제 프로젝트',self.load_demo),('설정 · 휴일',self.project_dialog),('기준선 저장',self.baseline)]:
             b=ttk.Button(self.toolbar,text=title,command=cmd);b.pack(side='left',padx=(0,8));self.buttons.append(b)
@@ -88,8 +81,6 @@ class App(tk.Tk):
         if self.result:
             s=summary(self.result,self.p);values=[s['P50'],s['P80'],s['P90'],f'{s["probability"]*100:.1f}%' if s['probability'] is not None else '목표 미설정']
         for l,v in zip(self.metrics,values):l.configure(text=v)
-    def changed(self,kind,reason):
-        self.result=None;self.store.add(self.p,kind,reason);self.metrics_update();self.fill_history();self.draw();self.note('입력 변경됨 · 분석 결과를 갱신하려면 다시 실행하세요.')
     def apply_dates(self,event=None):
         if self.busy:return
         changes=[]
@@ -107,9 +98,6 @@ class App(tk.Tk):
     def fill_modules(self):
         self.mods.delete(*self.mods.get_children())
         for i,(m,v) in enumerate(self.p['modules'].items()):self.mods.insert('','end',iid=str(i),values=[m,v,sum(t['module']==m for t in self.p['tasks'])])
-    def fill_history(self):
-        self.hist.delete(*self.hist.get_children())
-        for row in self.store.rows():self.hist.insert('','end',iid=str(row[0]),values=row)
     def select_task(self):
         s=self.tree.selection();return int(s[0]) if s else None
     def edit_selected(self):
@@ -119,105 +107,6 @@ class App(tk.Tk):
         i=self.select_task()
         if i is None or self.busy:return
         self.edit_task(None,self.p['tasks'][i])
-    def exclude_task(self):
-        i=self.select_task()
-        if i is None or self.busy:return
-        reason=simpledialog.askstring('작업 제외','제외 사유:',parent=self)
-        if reason:
-            self.p['tasks'][i]['state']='제외';self.changed('작업 제외',self.p['tasks'][i]['id']+': '+reason);self.fill_tasks()
-    def edit_task(self,index,copy=None):
-        if self.busy:return
-        t=dict(self.p['tasks'][index]) if index is not None else dict(copy or {},id='TASK-'+datetime.now().strftime('%H%M%S'),name=(copy['name']+' 복사') if copy else '',module=copy['module'] if copy else next(iter(self.p['modules']),'공통'),state='계획')
-        win=tk.Toplevel(self);win.title('작업 상세 편집');win.geometry('860x730');win.transient(self);win.grab_set();frame=ttk.Frame(win,padding=20);frame.pack(fill='both',expand=True);frame.columnconfigure(1,weight=1);frame.columnconfigure(3,weight=1);entries={}
-        for n,(k,label) in enumerate(COLS.items()):
-            row,col=divmod(n,2);col*=2;ttk.Label(frame,text=label).grid(row=row,column=col,sticky='w',padx=6,pady=8)
-            value=t.get(k,'');value=', '.join(value) if k=='pred' and isinstance(value,list) else '' if value is None else value
-            v=tk.StringVar(value=value);entries[k]=v
-            vals={'state':['계획','진행','완료','보류','제외'],'calendar':['달력일','근무일'],'module':list(self.p['modules'])}.get(k)
-            e=ttk.Combobox(frame,textvariable=v,values=vals,state='readonly' if k in ['state','calendar'] else 'normal') if vals else ttk.Entry(frame,textvariable=v)
-            e.grid(row=row,column=col+1,sticky='ew',padx=6,pady=8)
-            if k=='id' and index is not None:e.configure(state='readonly')
-            if k=='calendar' and not value:v.set('달력일')
-        ttk.Label(frame,text='날짜: YYYY-MM-DD / 선행 ID: 쉼표 구분 / 기간: 0 ≤ O ≤ M ≤ P / 진행은 잔여 기간 입력',foreground=MUTED).grid(row=11,column=0,columnspan=4,pady=10,sticky='w')
-        ttk.Label(frame,text='변경 사유').grid(row=12,column=0);reason=tk.StringVar();ttk.Entry(frame,textvariable=reason).grid(row=12,column=1,columnspan=3,sticky='ew')
-        def commit():
-            try:
-                new={k:v.get().strip() for k,v in entries.items()};new['pred']=[x.strip() for x in new['pred'].replace(';',',').split(',') if x.strip()]
-                for k in ['o','m','p','ro','rm','rp']:new[k]=float(new[k]) if new[k] else None
-                if not new['id'] or not new['name']:raise ValueError('ID와 작업명을 입력하세요.')
-                if index is None and any(x['id']==new['id'] for x in self.p['tasks']):raise ValueError('중복 ID입니다.')
-                for k in DATES:
-                    if new[k]:day(new[k])
-                if not reason.get().strip():raise ValueError('변경 사유를 입력하세요.')
-                diffs='; '.join(f'{COLS[k]}: {t.get(k)} → {new[k]}' for k in COLS if t.get(k)!=new[k])
-                if index is None:self.p['tasks'].append(new)
-                else:self.p['tasks'][index]=new
-                if new['module'] not in self.p['modules']:self.p['modules'][new['module']]='검토 필요'
-                self.changed('작업 편집',new['id']+' | '+reason.get()+' | '+diffs);self.sync();win.destroy()
-            except Exception as e:messagebox.showerror('입력 확인',str(e),parent=win)
-        ttk.Button(frame,text='변경 저장',style='Primary.TButton',command=commit).grid(row=13,column=3,pady=20,sticky='e')
-    def set_module(self,value):
-        if self.busy:return
-        selected=self.mods.selection()
-        if not selected:return
-        reason=simpledialog.askstring('모듈 변경','변경 사유:',parent=self)
-        if not reason:return
-        names=[]
-        for s in selected:
-            m=self.mods.item(s,'values')[0];names.append(m);self.p['modules'][m]=value
-        self.changed('모듈 변경',', '.join(names)+' → '+value+' | '+reason);self.fill_modules()
-    def replace_project(self,p,reason):
-        self.p=p;self.result=None;self.store.add(p,'프로젝트 불러오기',reason);self.sync();self.note(reason+' · 적용 모듈과 날짜를 확인하세요.')
-    def import_file(self):
-        if self.busy:return
-        path=filedialog.askopenfilename(filetypes=[('Excel workbook','*.xlsx')])
-        if not path:return
-        try:
-            p=read_excel(path)
-            if messagebox.askyesno('가져오기',f'{len(p["tasks"])}개 작업을 가져옵니다. 현재 입력은 이력에 보관하고 교체할까요?'):
-                self.store.add(self.p,'교체 전 저장','엑셀 가져오기 전');self.source_path=Path(path).resolve();self.replace_project(p,Path(path).name)
-        except Exception as e:messagebox.showerror('가져오기 오류',str(e))
-    def export_file(self):
-        if self.busy:return
-        self.apply_dates();path=filedialog.asksaveasfilename(defaultextension='.xlsx',initialfile='PJ_schedule.xlsx',filetypes=[('Excel workbook','*.xlsx')])
-        if not path:return
-        if self.source_path and Path(path).resolve()==self.source_path:messagebox.showwarning('다른 이름으로 저장','원본 보존을 위해 다른 파일명을 지정하세요.');return
-        try:write_excel(path,self.p,self.result);self.note('엑셀 내보내기 완료: '+path)
-        except Exception as e:messagebox.showerror('저장 오류',str(e))
-    def common(self):
-        if self.busy:return
-        if messagebox.askyesno('공통 템플릿','현재 입력은 이력에 보관하고 공통 243개 작업을 불러올까요?'):
-            try:self.store.add(self.p,'교체 전 저장','공통 템플릿 전환');self.source_path=BASE/'common_Rev1.xlsx';self.replace_project(read_excel(self.source_path),'공통 템플릿')
-            except Exception as e:messagebox.showerror('오류',str(e))
-    def load_demo(self):
-        if not self.busy and messagebox.askyesno('예제','현재 입력은 이력에 보관하고 예제로 전환할까요?'):self.store.add(self.p,'교체 전 저장','예제 전환');self.source_path=None;self.replace_project(demo(),'예제 (기간은 설명용 가정값)')
-    def project_dialog(self):
-        if self.busy:return
-        win=tk.Toplevel(self);win.title('프로젝트 설정');win.geometry('560x510');win.transient(self);win.grab_set();f=ttk.Frame(win,padding=24);f.pack(fill='both',expand=True);vs={}
-        for k,label in [('id','PJ ID'),('name','프로젝트명')]:
-            ttk.Label(f,text=label).pack(anchor='w');v=tk.StringVar(value=self.p[k]);vs[k]=v;ttk.Entry(f,textvariable=v).pack(fill='x',pady=(3,12))
-        ttk.Label(f,text='휴일 목록 · 한 줄에 YYYY-MM-DD 하나\n근무일 작업에만 적용. 국가 공휴일은 자동 등록하지 않습니다.').pack(anchor='w');txt=tk.Text(f,height=9);txt.pack(fill='both',expand=True,pady=10);txt.insert('1.0','\n'.join(self.p.get('holidays',[])))
-        def commit():
-            try:
-                holidays=[x.strip() for x in txt.get('1.0','end').splitlines() if x.strip()]
-                for h in holidays:day(h)
-                if not all(v.get().strip() for v in vs.values()):raise ValueError('ID와 프로젝트명을 입력하세요.')
-                self.p.update({k:v.get().strip() for k,v in vs.items()});self.p['holidays']=sorted(set(holidays));self.changed('설정 변경','프로젝트 정보 / 휴일 목록 변경');self.sync();win.destroy()
-            except Exception as e:messagebox.showerror('오류',str(e),parent=win)
-        ttk.Button(f,text='설정 저장',command=commit).pack(anchor='e')
-    def baseline(self):
-        if self.busy:return
-        self.apply_dates();name=simpledialog.askstring('기준선','기준선 이름 / 승인 근거:',parent=self)
-        if name:self.store.add(self.p,'기준선',name,summary(self.result,self.p) if self.result else None);self.fill_history();self.note('기준선 스냅샷 저장 완료')
-    def restore(self):
-        if self.busy:return
-        s=self.hist.selection()
-        if s and messagebox.askyesno('복원','선택 시점의 입력으로 복원할까요? 현재 입력도 이력에 남깁니다.'):
-            p=self.store.get(int(s[0]))['project'];self.store.add(self.p,'복원 전 저장','복원 전 상태');self.source_path=None;self.replace_project(p,'이력 #'+s[0]+' 복원')
-    def history_detail(self):
-        s=self.hist.selection()
-        if not s:return
-        row=self.hist.item(s[0],'values');payload=self.store.get(int(s[0]));win=tk.Toplevel(self);win.title('이력 상세');win.geometry('780x500');t=tk.Text(win,wrap='word',padx=20,pady=20);t.pack(fill='both',expand=True);t.insert('1.0',row[4]+'\n\n'+json.dumps(payload.get('summary'),ensure_ascii=False,indent=2));t.configure(state='disabled')
     def run(self):
         if self.busy:return
         self.apply_dates();errors,_=validate(self.p)
@@ -230,18 +119,6 @@ class App(tk.Tk):
             try:self.events.put(('done',simulate(snapshot,n,seed,lambda x:self.events.put(('progress',x)),self.cancel)))
             except Exception as e:self.events.put(('error',str(e)))
         threading.Thread(target=worker,daemon=True).start()
-    def poll(self):
-        try:
-            while True:
-                kind,value=self.events.get_nowait()
-                if kind=='progress':self.progress['value']=value
-                else:
-                    self.busy=False;self.runbtn.state(['!disabled']);self.cancelbtn.state(['disabled'])
-                    for b in self.buttons+self.date_entries:b.state(['!disabled'])
-                    if kind=='done':self.result=value;self.store.add(self.p,'분석 실행','몬테카를로 입력·결과',summary(value,self.p));self.fill_history();self.metrics_update();self.draw();self.note(f'{value["n"]:,}회 분석 완료 · 입력 가정에 따른 예측입니다.');self.tabs.select(self.roadtab)
-                    else:messagebox.showerror('분석 중단',value);self.note('분석 중단 · 입력 확인 필요')
-        except queue.Empty:pass
-        self.after(100,self.poll)
     def expand(self):self.collapsed.clear();self.draw()
     def draw(self):
         if not hasattr(self,'canvas'):return
@@ -268,9 +145,11 @@ class App(tk.Tk):
         if self.links.get():
             for t in visible:
                 if t['id'] not in ys:continue
-                for pred in t['pred']:
+                for edge in self.p['relations']:
+                    if edge['succ']!=t['id']:continue
+                    pred=edge['pred']
                     if pred in ys:
-                        a=x(percentile(r['ends'][pred],50));b=x(percentile(r['starts'][t['id']],50));c.create_line(a,ys[pred],a+14,ys[pred]+8,b-14,ys[t['id']]-8,b,ys[t['id']],smooth=True,fill='#bdcbdc',arrow=tk.LAST,width=1)
+                        a=x(percentile(r['starts' if edge['type']=='SS' else 'ends'][pred],50));b=x(percentile(r['ends' if edge['type']=='FF' else 'starts'][t['id']],50));c.create_line(a,ys[pred],a+14,ys[pred]+8,b-14,ys[t['id']]-8,b,ys[t['id']],smooth=True,fill='#bdcbdc',arrow=tk.LAST,width=1)
         for t in visible:
             k=t['id']
             if k not in ys:continue
@@ -308,13 +187,7 @@ class App(tk.Tk):
         for yy,k in self.rowids.items():
             if abs(yy-y)<18:
                 i=next(i for i,t in enumerate(self.p['tasks']) if t['id']==k);self.edit_task(i);break
-    def close(self):
-        if self.busy:
-            if not messagebox.askyesno('종료','계산을 중단하고 종료할까요?'):return
-            self.cancel.set()
-        else:self.apply_dates()
-        self.store.add(self.p,'종료 저장','프로그램 종료');self.store.db.close();self.destroy()
-GUIDE='''사용 순서\n\n1. 예제 프로젝트에서 [시뮬레이션 실행]을 누릅니다.\n2. 확률 기준을 P50~P95로 바꾸고 일정 범위 변화를 확인합니다.\n3. 공통 WBS 또는 기존 공통 Rev1 엑셀을 가져옵니다.\n4. 모듈 적용 탭에서 검토 필요 항목을 적용/제외로 결정합니다.\n5. 작업 편집에서 작업을 더블클릭해 담당자, 선행 ID, O/M/P를 수정합니다.\n6. 입력·결과 엑셀 내보내기 → Excel에서 편집 → 다시 가져오기를 반복합니다.\n\n계산 규칙\n\n• O=낙관 최소기간, M=최빈기간, P=비관 최대기간. 독립 삼각분포에서 추출 후 올림합니다.\n• FS + 0 선행관계만 지원합니다. 자원·Velocity·Tracks·SS/FF·Lag는 이번 초안에 없습니다.\n• 계획: 선행 완료일 / 분석 기준일 / 착수 제한일 중 가장 늦은 날부터 시작합니다.\n• 진행: 실제 시작일은 고정하고 기준일 이후 잔여 O/M/P를 사용합니다.\n• 완료: 실제 시작·완료일에 고정. 보류 및 검토 필요 모듈은 계산을 막습니다.\n• 제외: 기간 0으로 처리하며 선행관계를 유지합니다. 승인 등 마일스톤은 O=M=P=0입니다.\n• 경과일 기준입니다. 10/1 시작 1달력일 작업은 10/2에 완료합니다.\n• 근무일은 월~금 및 수동 등록한 휴일 목록을 반영합니다. 주말 착수는 다음 근무일로 이동합니다.\n• 초기에 제공하는 기간은 설명용·미보정 가정값입니다. 실제 사업 실적으로 검토하세요.\n\n화면 읽기\n\n얇은선: 시작 P10부터 완료 선택 P까지. 파랑: 시작 P50~선택 P, 초록: 완료 P50~선택 P.\n각 막대는 개별 작업의 주변분포를 요약하므로 막대 전체가 하나의 실행 가능한 일정은 아닙니다.\n모듈명을 클릭하면 접고 펼칠 수 있고, 작업행을 더블클릭하면 상세 편집창을 엽니다.\nP80은 입력 가정 아래 시뮬레이션 약 80%가 해당 날짜까지 완료됨을 의미합니다.\n\n엑셀 교환\n\n공통 Rev1과 프로그램 전용 교환 XLSX를 지원합니다. 임의의 다른 서식 자동 매핑은 미지원입니다.\n전용 양식: 프로젝트 / 모듈 / 작업목록 / 휴일 / 사용안내 (+ 분석요약 / 작업결과).\n열 이름은 유지하고 행 추가/정렬은 가능합니다. 기간 칸은 수식 대신 숫자로 입력합니다.\n내보내기는 원본 전체 서식을 복제하지 않습니다. 원본의 문서대장 등 부가 시트는 원본에서 관리하세요.\n결과 시트는 마지막 분석 시점 스냅샷이며 엑셀에서 입력을 바꿔도 자동 재계산되지 않습니다.\n\n저장 · 이력\n\n작업 수정은 변경 사유와 입력 스냅샷을 SQLite에 보관합니다. 분석 시 입력/요약/Seed/버전을 저장합니다.\n기준선 저장은 승인 시점 입력을 별도 이벤트로 남깁니다. 이력 탭에서 입력을 복원할 수 있습니다.\n로컬 DB 위치: %LOCALAPPDATA%\\ProjectScheduleLab\\history.sqlite3\n백업은 프로그램 종료 후 이 DB를 복사하세요. 팀 동시 편집과 서버 동기화는 지원하지 않습니다.\n\n참조\n\n시각 구성은 Bitovi jira-auto-scheduler의 확률 로드맵 화면을 참고했습니다.\nhttps://github.com/bitovi/jira-auto-scheduler\n원본 코드와 로고는 포함하지 않았으며, Python O/M/P 엔진으로 독립 구현했습니다.\n'''
+GUIDE='프로젝트 메뉴: 생성·열기·저장·복제·DB 백업·복원\n일정 · 데이터 메뉴: 관계·달력·오류 검토·M 기준 재계산·기준 일정 조회\n\n엑셀은 비교 후 선택 적용합니다. 빈 셀은 보존, __CLEAR__는 삭제, 누락 행은 보존합니다. 충돌은 기본 미선택입니다. 관계 시트가 선행 ID 열보다 우선합니다.\n\nFS/SS/FF와 0 이상 정수 시차 지원. 시작부터 완료까지 경과일 방식이며 1일 작업은 다음 날 완료합니다. 기본 주5일, 추가 근무일이 휴일보다 우선합니다. 공휴일은 직접 관리합니다.\n\n기준일은 당일 시작 시점입니다. 진행 잔여기간은 기준일부터 계산하며 실제 시작은 고정합니다. 실적 관계 위반은 경고하고 미완료 FS는 잔여 작업을 지연합니다. 보류는 재개일 없으면 차단합니다.\n\n모듈/작업 제외 시 관계는 보존하며 연결 검토 전 계산을 차단합니다. 무조건 0일로 재연결하지 않습니다. 고정 날짜 충돌은 계산 실패입니다. 목표일은 강제하지 않습니다.\n\n기준 일정은 M 기준 계산의 승인 버전입니다. 재계산·Import·입력 복원으로 승인 버전이 바뀌지 않습니다. 총 여유는 목표일까지 차이와 별개이며 달력일 단위입니다. 실적 고정 작업은 여유 미정의입니다.\n\n표준 Export는 원본 임의 시트·서식·그림을 복제하지 않습니다. 전체 이력은 DB에 있습니다. 자세한 이전/검수 절차는 README_KO.md를 확인하세요.\n'
 if __name__=='__main__':
     try:App().mainloop()
     except Exception:

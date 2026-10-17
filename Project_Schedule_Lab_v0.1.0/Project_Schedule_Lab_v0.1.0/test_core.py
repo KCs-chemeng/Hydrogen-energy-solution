@@ -11,7 +11,10 @@ class Tests(unittest.TestCase):
  def test_serial_parallel(self):
   p=self.base();self.assertEqual(percentile(simulate(p,100)['total'],80),day(p['start'])+4);p['tasks'][1]['pred']=[];self.assertEqual(percentile(simulate(p,100)['total'],80),day(p['start'])+2)
  def test_exclusion(self):
-  p=self.base();p['tasks'][0]['state']='제외';self.assertEqual(percentile(simulate(p,100)['total'],80),day(p['start'])+2)
+  p=self.base();p['tasks'][0]['state']='제외'
+  # v2 safety policy: connected exclusions need explicit network review, not implicit zero duration.
+  with self.assertRaisesRegex(ValueError,'제외 작업 연결 검토'):simulate(p,100)
+  p['tasks'][1]['pred']=[];self.assertEqual(percentile(simulate(p,100)['total'],80),day(p['start'])+2)
  def test_cycle_missing(self):
   p=self.base();p['tasks'][0]['pred']=['A02'];self.assertTrue(validate(p)[0]);p['tasks'][0]['pred']=['unknown'];self.assertTrue(validate(p)[0])
  def test_actual_remaining(self):
