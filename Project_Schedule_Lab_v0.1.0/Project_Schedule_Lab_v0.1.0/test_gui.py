@@ -63,6 +63,40 @@ class GuiTests(unittest.TestCase):
         for w in list(app.winfo_children()):
             if isinstance(w,tk.Toplevel): w.destroy()
 
+    def test_probability_selection_moves_successors_and_relation_anchors(self):
+        import numpy as np
+        from engine import simulate,percentile
+        from test_v2 import project,edge
+        app=self.app
+        p=project((5,2,2,0),[edge('A','B'),edge('A','C','SS',1),edge('A','D','FF',2)])
+        p['tasks'][0].update(o=1,m=5,p=20)
+        app.replace_project(p,'확률 표시 회귀 시험');app.result=simulate(app.p,5000,42)
+        r=app.result;original={k:v.copy() for k,v in r['starts'].items()}
+        np.testing.assert_array_equal(r['ends']['A'],r['starts']['B'])
+        def center(tag):
+            box=app.canvas.coords(tag);return (box[0]+box[2])/2
+        def expected_x(value):
+            from engine import day
+            lo=min(day(app.p['start']),min(percentile(v,10) for v in r['starts'].values()))
+            hi=max(lo+30,percentile(r['total'],95),day(app.p.get('target')) or lo)
+            return 430+(value-lo)/(hi-lo)*(max(1250,app.canvas.winfo_width())-40-430)
+        positions={}
+        for q in (75,95):
+            app.q.set(q);app.draw();app.update()
+            positions[q]=center('start:B')
+            self.assertAlmostEqual(center('end:A'),center('start:B'))
+            for k in ('A','B','C','D'):
+                self.assertAlmostEqual(center('start:'+k),expected_x(percentile(r['starts'][k],q)))
+                self.assertAlmostEqual(center('end:'+k),expected_x(percentile(r['ends'][k],q)))
+                self.assertIn('P'+str(q),app.canvas.itemcget('dates:'+k,'text'))
+            for pred,succ,typ in [('A','B','FS'),('A','C','SS'),('A','D','FF')]:
+                coords=app.canvas.coords(f'relation:{pred}:{succ}:{typ}')
+                self.assertAlmostEqual(coords[0],center(('start:' if typ=='SS' else 'end:')+pred))
+                self.assertAlmostEqual(coords[-2],center(('end:' if typ=='FF' else 'start:')+succ))
+            self.assertTrue(app.canvas.find_withtag('milestone:D'))
+        self.assertGreater(positions[95],positions[75])
+        for k,v in original.items(): np.testing.assert_array_equal(r['starts'][k],v)
+
     def test_project_clone_and_backup_restore_ui(self):
         app=self.app;old=app.p['uid'];backup=Path(self.tmp.name)/'backup.sqlite3'
         with patch('ui_v2.simpledialog.askstring',return_value='복제'): app.duplicate_project()

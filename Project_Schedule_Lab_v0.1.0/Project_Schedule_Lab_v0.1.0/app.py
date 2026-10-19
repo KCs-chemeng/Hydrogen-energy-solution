@@ -53,7 +53,7 @@ class App(Workflows,tk.Tk):
         ttk.Label(bar,text='모듈').pack(side='left',padx=(25,5));self.filter=tk.StringVar(value='전체');self.filterbox=ttk.Combobox(bar,textvariable=self.filter,state='readonly',width=22);self.filterbox.pack(side='left');self.filterbox.bind('<<ComboboxSelected>>',lambda e:self.draw())
         self.links=tk.BooleanVar(value=True);ttk.Checkbutton(bar,text='선행 연결선',variable=self.links,command=self.draw).pack(side='left',padx=15)
         ttk.Button(bar,text='전체 펼치기',command=self.expand).pack(side='right')
-        ttk.Label(self.roadtab,text='  파랑: 시작일 P50~선택 P   초록: 완료일 P50~선택 P   얇은선: 시작 P10~완료 선택 P   연결선: P50 기준 관계 (단일 실행 일정 아님)',foreground=MUTED,padding=(10,4)).pack(fill='x')
+        ttk.Label(self.roadtab,text='  파랑: 선택 P 시작   초록: 선택 P 완료   실선·연결선: 선택 P 기준   회색: 시작 P10~완료 선택 P 참고 범위 (개별 분위수 요약)',foreground=MUTED,padding=(10,4)).pack(fill='x')
         area=ttk.Frame(self.roadtab);area.pack(fill='both',expand=True);area.rowconfigure(0,weight=1);area.columnconfigure(0,weight=1)
         self.canvas=tk.Canvas(area,bg='white',highlightthickness=0);self.canvas.grid(row=0,column=0,sticky='nsew');ys=ttk.Scrollbar(area,orient='vertical',command=self.canvas.yview);ys.grid(row=0,column=1,sticky='ns');xs=ttk.Scrollbar(area,orient='horizontal',command=self.canvas.xview);xs.grid(row=1,column=0,sticky='ew');self.canvas.configure(yscrollcommand=ys.set,xscrollcommand=xs.set);self.canvas.bind('<Configure>',lambda e:self.draw());self.canvas.bind('<Double-1>',self.canvas_edit);self.canvas.bind('<Button-1>',self.canvas_click);self.canvas.bind('<MouseWheel>',lambda e:self.canvas.yview_scroll(int(-e.delta/120),'units'))
         tb=ttk.Frame(self.tasktab,padding=10);tb.pack(fill='x');ttk.Label(tb,text='작업명 또는 ID 검색').pack(side='left');self.search=tk.StringVar();self.search.trace_add('write',lambda *_:self.fill_tasks());ttk.Entry(tb,textvariable=self.search,width=30).pack(side='left',padx=10)
@@ -149,13 +149,20 @@ class App(Workflows,tk.Tk):
                     if edge['succ']!=t['id']:continue
                     pred=edge['pred']
                     if pred in ys:
-                        a=x(percentile(r['starts' if edge['type']=='SS' else 'ends'][pred],50));b=x(percentile(r['ends' if edge['type']=='FF' else 'starts'][t['id']],50));c.create_line(a,ys[pred],a+14,ys[pred]+8,b-14,ys[t['id']]-8,b,ys[t['id']],smooth=True,fill='#bdcbdc',arrow=tk.LAST,width=1)
+                        a=x(percentile(r['starts' if edge['type']=='SS' else 'ends'][pred],q));b=x(percentile(r['ends' if edge['type']=='FF' else 'starts'][t['id']],q));c.create_line(a,ys[pred],a+14,ys[pred]+8,b-14,ys[t['id']]-8,b,ys[t['id']],smooth=True,fill='#bdcbdc',arrow=tk.LAST,width=1,tags=('relation',f"relation:{pred}:{t['id']}:{edge['type']}"))
         for t in visible:
             k=t['id']
             if k not in ys:continue
             yy=ys[k];c.create_line(0,yy+20,width,yy+20,fill='#f0f3f7');label=t['name'];label=label if len(label)<34 else label[:33]+'…';c.create_text(24,yy-7,text=label,anchor='w',fill=NAVY,font=('맑은 고딕',10));c.create_text(24,yy+9,text=f'{k}   ·   {t["state"]}   ·   {t.get("calendar","달력일")}',anchor='w',fill=MUTED,font=('맑은 고딕',8))
-            s10,s50,sq=[x(percentile(r['starts'][k],v)) for v in (10,50,q)];f50,fq=[x(percentile(r['ends'][k],v)) for v in (50,q)]
-            c.create_line(s10,yy,fq,yy,fill='#5cddb0',width=4);c.create_rectangle(s50,yy-8,max(s50+3,sq),yy+8,fill=BLUE,outline='');c.create_rectangle(f50,yy-8,max(f50+3,fq),yy+8,fill=GREEN,outline='');c.create_line(s50,yy,f50,yy,fill='#3387c6',width=2)
+            start_day=percentile(r['starts'][k],q);finish_day=percentile(r['ends'][k],q)
+            sq,fq=x(start_day),x(finish_day);s10=x(percentile(r['starts'][k],10))
+            c.create_line(s10,yy,fq,yy,fill='#d9e2ed',width=3,tags=('uncertainty',f'uncertainty:{k}'))
+            c.create_line(sq,yy,fq,yy,fill='#3387c6',width=6,tags=('schedule',f'schedule:{k}'))
+            c.create_rectangle(sq-3,yy-8,sq+3,yy+8,fill=BLUE,outline='',tags=('task-start',f'start:{k}'))
+            c.create_rectangle(fq-3,yy-8,fq+3,yy+8,fill=GREEN,outline='',tags=('task-end',f'end:{k}'))
+            if start_day==finish_day:
+                c.create_polygon(sq,yy-8,sq+7,yy,sq,yy+8,sq-7,yy,fill=GREEN,outline=BLUE,tags=('milestone',f'milestone:{k}'))
+            c.create_text((sq+fq)/2,yy-13,text=f'P{q} {textday(start_day)[5:]} → {textday(finish_day)[5:]}',fill=MUTED,font=('Segoe UI',8),tags=('schedule-date',f'dates:{k}'))
         total=percentile(r['total'],q);c.create_rectangle(0,44,width,88,fill='#f8fafc',outline='');c.create_text(24,66,text=f'PROJECT FINISH   ·   P{q}  {textday(total)}',anchor='w',font=('Segoe UI',11,'bold'),fill=NAVY);c.create_line(x(percentile(r['total'],10)),66,x(total),66,fill='#44d7a5',width=5);c.create_oval(x(total)-5,61,x(total)+5,71,fill=GREEN,outline='')
         if self.p.get('target'):
             tx=x(day(self.p['target']));c.create_line(tx,44,tx,height,fill='#d59b38',dash=(5,4));c.create_text(tx,81,text='목표',anchor='n',fill='#b07a1d',font=('맑은 고딕',9))
@@ -187,7 +194,7 @@ class App(Workflows,tk.Tk):
         for yy,k in self.rowids.items():
             if abs(yy-y)<18:
                 i=next(i for i,t in enumerate(self.p['tasks']) if t['id']==k);self.edit_task(i);break
-GUIDE='프로젝트 메뉴: 생성·열기·저장·복제·DB 백업·복원\n일정 · 데이터 메뉴: 관계·달력·오류 검토·M 기준 재계산·기준 일정 조회\n\n엑셀은 비교 후 선택 적용합니다. 빈 셀은 보존, __CLEAR__는 삭제, 누락 행은 보존합니다. 충돌은 기본 미선택입니다. 관계 시트가 선행 ID 열보다 우선합니다.\n\nFS/SS/FF와 0 이상 정수 시차 지원. 시작부터 완료까지 경과일 방식이며 1일 작업은 다음 날 완료합니다. 기본 주5일, 추가 근무일이 휴일보다 우선합니다. 공휴일은 직접 관리합니다.\n\n기준일은 당일 시작 시점입니다. 진행 잔여기간은 기준일부터 계산하며 실제 시작은 고정합니다. 실적 관계 위반은 경고하고 미완료 FS는 잔여 작업을 지연합니다. 보류는 재개일 없으면 차단합니다.\n\n모듈/작업 제외 시 관계는 보존하며 연결 검토 전 계산을 차단합니다. 무조건 0일로 재연결하지 않습니다. 고정 날짜 충돌은 계산 실패입니다. 목표일은 강제하지 않습니다.\n\n기준 일정은 M 기준 계산의 승인 버전입니다. 재계산·Import·입력 복원으로 승인 버전이 바뀌지 않습니다. 총 여유는 목표일까지 차이와 별개이며 달력일 단위입니다. 실적 고정 작업은 여유 미정의입니다.\n\n표준 Export는 원본 임의 시트·서식·그림을 복제하지 않습니다. 전체 이력은 DB에 있습니다. 자세한 이전/검수 절차는 README_KO.md를 확인하세요.\n'
+GUIDE='로드맵의 시작·완료 표식과 연결선은 선택한 확률 기준을 함께 사용합니다. 개별 작업 분위수 요약이며 단일 실행 일정은 아닙니다.\n\n프로젝트 메뉴: 생성·열기·저장·복제·DB 백업·복원\n일정 · 데이터 메뉴: 관계·달력·오류 검토·M 기준 재계산·기준 일정 조회\n\n엑셀은 비교 후 선택 적용합니다. 빈 셀은 보존, __CLEAR__는 삭제, 누락 행은 보존합니다. 충돌은 기본 미선택입니다. 관계 시트가 선행 ID 열보다 우선합니다.\n\nFS/SS/FF와 0 이상 정수 시차 지원. 시작부터 완료까지 경과일 방식이며 1일 작업은 다음 날 완료합니다. 기본 주5일, 추가 근무일이 휴일보다 우선합니다. 공휴일은 직접 관리합니다.\n\n기준일은 당일 시작 시점입니다. 진행 잔여기간은 기준일부터 계산하며 실제 시작은 고정합니다. 실적 관계 위반은 경고하고 미완료 FS는 잔여 작업을 지연합니다. 보류는 재개일 없으면 차단합니다.\n\n모듈/작업 제외 시 관계는 보존하며 연결 검토 전 계산을 차단합니다. 무조건 0일로 재연결하지 않습니다. 고정 날짜 충돌은 계산 실패입니다. 목표일은 강제하지 않습니다.\n\n기준 일정은 M 기준 계산의 승인 버전입니다. 재계산·Import·입력 복원으로 승인 버전이 바뀌지 않습니다. 총 여유는 목표일까지 차이와 별개이며 달력일 단위입니다. 실적 고정 작업은 여유 미정의입니다.\n\n표준 Export는 원본 임의 시트·서식·그림을 복제하지 않습니다. 전체 이력은 DB에 있습니다. 자세한 이전/검수 절차는 README_KO.md를 확인하세요.\n'
 if __name__=='__main__':
     try:App().mainloop()
     except Exception:

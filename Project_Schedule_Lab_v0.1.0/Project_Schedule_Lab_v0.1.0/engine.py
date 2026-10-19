@@ -5,7 +5,7 @@ import math
 import numpy as np
 from model import canonical
 
-VERSION = '0.2.0'
+VERSION = '0.2.1'
 MIN_DAY = date(1900, 1, 1).toordinal()
 MAX_DAY = date(2200, 1, 1).toordinal()
 
