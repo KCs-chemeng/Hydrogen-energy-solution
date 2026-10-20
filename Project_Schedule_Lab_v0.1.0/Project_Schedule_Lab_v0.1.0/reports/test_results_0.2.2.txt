@@ -1,0 +1,54 @@
+test_actual_remaining (test_core.Tests.test_actual_remaining) ... ok
+test_common_roundtrip (test_core.Tests.test_common_roundtrip) ... ok
+test_cycle_missing (test_core.Tests.test_cycle_missing) ... ok
+test_exclusion (test_core.Tests.test_exclusion) ... ok
+test_repeatability (test_core.Tests.test_repeatability) ... ok
+test_serial_parallel (test_core.Tests.test_serial_parallel) ... ok
+test_store (test_core.Tests.test_store) ... ok
+test_workday_holiday (test_core.Tests.test_workday_holiday) ... ok
+test_baseline_forecast_backup_reopen_restore (test_v2.DataTests.test_baseline_forecast_backup_reopen_restore) ... ok
+test_blank_preserve_and_explicit_clear (test_v2.DataTests.test_blank_preserve_and_explicit_clear) ... ok
+test_blank_relation_cells_preserve_values (test_v2.DataTests.test_blank_relation_cells_preserve_values) ... ok
+test_clone_isolation_mapping_and_stable_identity (test_v2.DataTests.test_clone_isolation_mapping_and_stable_identity) ... ok
+test_duplicate_date_missing_ref_diagnostics (test_v2.DataTests.test_duplicate_date_missing_ref_diagnostics) ... ok
+test_explicit_holiday_clear_and_default_calendar (test_v2.DataTests.test_explicit_holiday_clear_and_default_calendar) ... ok
+test_export_formula_safe_and_source_unchanged (test_v2.DataTests.test_export_formula_safe_and_source_unchanged) ... ok
+test_idless_new_and_existing_mapping_block (test_v2.DataTests.test_idless_new_and_existing_mapping_block) ... ok
+test_import_atomic_rollback_database_failure (test_v2.DataTests.test_import_atomic_rollback_database_failure) ... ok
+test_missing_not_deleted (test_v2.DataTests.test_missing_not_deleted) ... ok
+test_name_wbs_and_row_order_keep_ids (test_v2.DataTests.test_name_wbs_and_row_order_keep_ids) ... ok
+test_noop_roundtrip_no_history_version (test_v2.DataTests.test_noop_roundtrip_no_history_version) ... ok
+test_optimistic_write_conflict_no_partial_data (test_v2.DataTests.test_optimistic_write_conflict_no_partial_data) ... ok
+test_relationship_sheet_precedence (test_v2.DataTests.test_relationship_sheet_precedence) ... ok
+test_restore_rejects_non_project_without_damage (test_v2.DataTests.test_restore_rejects_non_project_without_damage) ... ok
+test_selected_subset_revalidated (test_v2.DataTests.test_selected_subset_revalidated) ... ok
+test_stale_preview_blocks (test_v2.DataTests.test_stale_preview_blocks) ... ok
+test_three_way_conflict_and_local_only_preservation (test_v2.DataTests.test_three_way_conflict_and_local_only_preservation) ... ok
+test_failed_migration_rolls_back_schema_and_preserves_original (test_v2.MigrationTests.test_failed_migration_rolls_back_schema_and_preserves_original) ... ok
+test_v1_preserved_and_backup_created (test_v2.MigrationTests.test_v1_preserved_and_backup_created) ... ok
+test_completed_actual_violations_warn (test_v2.ScheduleTests.test_completed_actual_violations_warn) ... ok
+test_cycles_self_cross_project_and_negative_lag (test_v2.ScheduleTests.test_cycles_self_cross_project_and_negative_lag) ... ok
+test_duration_validation_and_state_contradiction (test_v2.ScheduleTests.test_duration_validation_and_state_contradiction) ... ok
+test_exclusion_restore_preserves_network (test_v2.ScheduleTests.test_exclusion_restore_preserves_network) ... ok
+test_fixed_dates_and_target (test_v2.ScheduleTests.test_fixed_dates_and_target) ... ok
+test_fixed_omp_monte_carlo_equals_deterministic (test_v2.ScheduleTests.test_fixed_omp_monte_carlo_equals_deterministic) ... ok
+test_fs_and_parallel_merge (test_v2.ScheduleTests.test_fs_and_parallel_merge) ... ok
+test_generalized_cpm_against_enumerated_feasible_schedules (test_v2.ScheduleTests.test_generalized_cpm_against_enumerated_feasible_schedules) ... ok
+test_hold_and_missing_remaining (test_v2.ScheduleTests.test_hold_and_missing_remaining) ... ok
+test_holidays_extra_workdays_mixed_calendar (test_v2.ScheduleTests.test_holidays_extra_workdays_mixed_calendar) ... ok
+test_lag_workdays (test_v2.ScheduleTests.test_lag_workdays) ... ok
+test_one_day_and_zero_milestone (test_v2.ScheduleTests.test_one_day_and_zero_milestone) ... ok
+test_ongoing_remaining_waits_for_incomplete_fs (test_v2.ScheduleTests.test_ongoing_remaining_waits_for_incomplete_fs) ... ok
+test_ss_ff_multiple_lag (test_v2.ScheduleTests.test_ss_ff_multiple_lag) ... ok
+test_workday_ff_and_float (test_v2.ScheduleTests.test_workday_ff_and_float) ... ok
+test_import_cancel_keeps_current_project_and_errors_disable_apply (test_gui.GuiTests.test_import_cancel_keeps_current_project_and_errors_disable_apply) ... ok
+test_import_file_apply_stays_visible_and_switches_large_project (test_gui.GuiTests.test_import_file_apply_stays_visible_and_switches_large_project) ... ok
+test_import_preview_apply_and_ui_editors (test_gui.GuiTests.test_import_preview_apply_and_ui_editors) ... ok
+test_probability_selection_moves_successors_and_relation_anchors (test_gui.GuiTests.test_probability_selection_moves_successors_and_relation_anchors) ... ok
+test_project_clone_and_backup_restore_ui (test_gui.GuiTests.test_project_clone_and_backup_restore_ui) ... ok
+test_recalculate_simulate_baseline_reopen (test_gui.GuiTests.test_recalculate_simulate_baseline_reopen) ... ok
+
+----------------------------------------------------------------------
+Ran 49 tests in 4.938s
+
+OK

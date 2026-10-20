@@ -97,6 +97,43 @@ class GuiTests(unittest.TestCase):
         self.assertGreater(positions[95],positions[75])
         for k,v in original.items(): np.testing.assert_array_equal(r['starts'][k],v)
 
+    def test_import_file_apply_stays_visible_and_switches_large_project(self):
+        from model import canonical
+        app=self.app;old_uid=app.p['uid'];path=Path(self.tmp.name)/'433_tasks.xlsx'
+        p=canonical(dict(id='IMPORT-433',name='2027 신규 프로젝트',start='2027-01-01',asof='2027-01-01',
+                         modules={'시험':'적용'},tasks=[dict(id=f'WBS-{i:03d}',name=f'작업 {i}',module='시험',o=1,m=2,p=4,pred=[]) for i in range(433)]))
+        write_excel(path,p);app.search.set('기존 프로젝트 검색어')
+        with patch('ui_v2.filedialog.askopenfilename',return_value=str(path)),patch('ui_v2.messagebox.askyesno',side_effect=AssertionError('Unexpected extra confirmation')):
+            app.import_file()
+        app.update();win=next(w for w in app.winfo_children() if isinstance(w,tk.Toplevel))
+        button=self.button(win,'선택한 변경 적용')
+        for geometry in ('1150x760','1000x650','680x460'):
+            win.geometry(geometry);app.update()
+            self.assertTrue(button.winfo_ismapped(),geometry)
+            top=button.winfo_rooty()-win.winfo_rooty()
+            self.assertGreaterEqual(top,0);self.assertLess(top+button.winfo_height(),win.winfo_height())
+        self.assertEqual(app.p['uid'],old_uid)  # Reading/reviewing never applies early.
+        button.invoke();app.update()
+        self.assertEqual(app.p['id'],'IMPORT-433');self.assertEqual(len(app.p['tasks']),433)
+        self.assertEqual(len(app.tree.get_children()),433);self.assertEqual(app.search.get(),'')
+        self.assertEqual(app.tabs.select(),str(app.tasktab));self.assertIn('가져오기 완료',app.status.cget('text'))
+        self.assertIn('433',app.caption.cget('text'))
+        app.count.set('1000');app.runbtn.invoke();deadline=time.monotonic()+20
+        while app.busy and time.monotonic()<deadline: app.update();time.sleep(.01)
+        self.assertFalse(app.busy);self.assertEqual(len(app.result['starts']),433)
+        self.assertEqual(app.result['project_uid'],app.p['uid']);self.assertEqual(app.result['asof'],'2027-01-01')
+
+    def test_import_cancel_keeps_current_project_and_errors_disable_apply(self):
+        app=self.app;old_uid=app.p['uid'];path=Path(self.tmp.name)/'test.xlsx'
+        write_excel(path,app.p);plan=prepare(path,app.p,app.store)
+        win=app.import_preview(plan);app.update();self.button(win,'취소').invoke();app.update()
+        self.assertEqual(app.p['uid'],old_uid);self.assertIn('취소',app.status.cget('text'))
+        from excel_io import Issue
+        plan.issues.append(Issue('오류',str(path),'작업목록',2,'A','A','시험 오류','수정하세요'))
+        win=app.import_preview(plan);app.update()
+        button=self.button(win,'선택한 변경 적용');self.assertTrue(button.winfo_ismapped());self.assertTrue(button.instate(['disabled']))
+        win.destroy()
+
     def test_project_clone_and_backup_restore_ui(self):
         app=self.app;old=app.p['uid'];backup=Path(self.tmp.name)/'backup.sqlite3'
         with patch('ui_v2.simpledialog.askstring',return_value='복제'): app.duplicate_project()

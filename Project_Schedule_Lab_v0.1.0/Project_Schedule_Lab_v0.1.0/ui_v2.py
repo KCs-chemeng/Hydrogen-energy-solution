@@ -136,25 +136,45 @@ class Workflows:
             if (p.get('uid') and p['uid']!=self.p['uid']) or (p.get('id') and p['id']!=self.p['id']):
                 existing=self.store.load(p.get('uid',''))
                 if existing: target=existing
-                elif messagebox.askyesno('다른 프로젝트','별도 신규 프로젝트로 비교할까요? 현재 프로젝트는 보존합니다.'):
-                    target=None
-                else: return
+                else: target=None  # Separate project; final review/apply remains explicit.
             plan=prepare(path,target,self.store)
             self.import_preview(plan)
         except Exception as exc: messagebox.showerror('가져오기 오류',str(exc),parent=self)
 
     def import_preview(self,plan):
         self.store.record_preview(plan)
-        win=tk.Toplevel(self);win.title('엑셀 사전 검토 — 더블클릭으로 적용 항목 선택');win.geometry('1200x800');win.transient(self);win.grab_set()
-        ttk.Label(win,text='누락 행은 보존 · 빈 셀은 보존 · __CLEAR__는 삭제 · 충돌은 기본 미선택 · 관계 시트 우선').pack(anchor='w',padx=10,pady=8)
-        tree=ttk.Treeview(win,columns=('select','kind','task','field','old','new'),show='headings',height=16)
+        win=tk.Toplevel(self);win.title('엑셀 가져오기 — 검토 후 상단 적용 버튼을 누르세요')
+        win.geometry(f'{min(1150,self.winfo_screenwidth()-80)}x{min(760,self.winfo_screenheight()-100)}')
+        win.minsize(680,460);win.transient(self);win.grab_set()
+        win.columnconfigure(0,weight=1);win.rowconfigure(2,weight=1)
+        header=ttk.Frame(win,padding=(12,8));header.grid(row=0,column=0,sticky='ew')
+        header.columnconfigure(0,weight=1)
+        incoming=plan.incoming or plan.current
+        ttk.Label(header,text='파일: '+Path(plan.filename).name,wraplength=1000).grid(row=0,column=0,sticky='w')
+        identity=f"가져올 프로젝트: {incoming.get('id',plan.current['id'])} / {incoming.get('name','')} / 작업 {len(incoming.get('tasks',[]))}개"
+        ttk.Label(header,text=identity,wraplength=1000).grid(row=1,column=0,sticky='w',pady=3)
+        ttk.Label(header,text='아직 적용 전입니다. 검토 후 [선택한 변경 적용]을 눌러야 현재 화면이 전환됩니다.',foreground='#1261cb',wraplength=1000).grid(row=2,column=0,sticky='w')
+        # Reserve action space before the resizable preview, even at small screen sizes/DPI.
+        controls=ttk.Frame(win,padding=(12,6));controls.grid(row=1,column=0,sticky='ew');controls.columnconfigure(1,weight=1)
+        reason=tk.StringVar(value='엑셀 검토 후 적용');ack=tk.BooleanVar();count=tk.StringVar()
+        ttk.Label(controls,text='변경 사유').grid(row=0,column=0,sticky='w',padx=(0,8))
+        ttk.Entry(controls,textvariable=reason).grid(row=0,column=1,sticky='ew',padx=(0,8))
+        ttk.Checkbutton(controls,text='오류·경고·누락 및 선택한 충돌 덮어쓰기를 확인했습니다.',variable=ack).grid(row=1,column=0,columnspan=2,sticky='w',pady=6)
+        ttk.Label(controls,textvariable=count).grid(row=2,column=0,columnspan=2,sticky='w')
+        panes=ttk.Panedwindow(win,orient='vertical');panes.grid(row=2,column=0,sticky='nsew',padx=12,pady=(4,10))
+        table=ttk.Frame(panes);table.columnconfigure(0,weight=1);table.rowconfigure(0,weight=1)
+        tree=ttk.Treeview(table,columns=('select','kind','task','field','old','new'),show='headings',height=8)
         for k,label,width in [('select','적용',55),('kind','분류',80),('task','작업',110),('field','필드',110),('old','변경 전',330),('new','변경 후',330)]: tree.heading(k,text=label);tree.column(k,width=width)
-        tree.pack(fill='both',expand=True)
+        tree.grid(row=0,column=0,sticky='nsew')
+        ybar=ttk.Scrollbar(table,orient='vertical',command=tree.yview);ybar.grid(row=0,column=1,sticky='ns')
+        xbar=ttk.Scrollbar(table,orient='horizontal',command=tree.xview);xbar.grid(row=1,column=0,sticky='ew')
+        tree.configure(yscrollcommand=ybar.set,xscrollcommand=xbar.set);panes.add(table,weight=3)
         selected={c.key for c in plan.changes if not c.conflict}
         def render():
             tree.delete(*tree.get_children())
             for i,c in enumerate(plan.changes):
                 tree.insert('','end',iid=str(i),values=('✓' if c.key in selected else '', '충돌' if c.conflict else c.kind,c.task,c.field,str(c.before),str(c.after)))
+            count.set(f"선택 {len(selected)}개 변경 / 오류 {sum(i.severity=='오류' for i in plan.issues)} / 경고 {sum(i.severity=='경고' for i in plan.issues)} · 행 더블클릭으로 선택/해제")
         def toggle(event):
             row=tree.identify_row(event.y)
             if row:
@@ -163,19 +183,27 @@ class Workflows:
                 else: selected.add(key)
                 render()
         tree.bind('<Double-1>',toggle);render()
-        report=tk.Text(win,height=12,wrap='word');report.pack(fill='both',expand=True)
-        report.insert('1.0',json.dumps(plan.report(),ensure_ascii=False,indent=2)+'\n\n'+'\n'.join(map(str,plan.issues)));report.configure(state='disabled')
-        ack=tk.BooleanVar();ttk.Checkbutton(win,text='오류·경고·누락 및 선택한 충돌 덮어쓰기를 확인했습니다.',variable=ack).pack(anchor='w')
-        reason=tk.StringVar(value='엑셀 검토 후 적용');ttk.Label(win,text='변경 사유').pack(anchor='w');ttk.Entry(win,textvariable=reason).pack(fill='x')
+        details=ttk.Frame(panes);details.columnconfigure(0,weight=1);details.rowconfigure(0,weight=1)
+        report=tk.Text(details,height=5,wrap='word');report.grid(row=0,column=0,sticky='nsew')
+        scroll=ttk.Scrollbar(details,orient='vertical',command=report.yview);scroll.grid(row=0,column=1,sticky='ns');report.configure(yscrollcommand=scroll.set)
+        report.insert('1.0','빈 셀 보존 · 누락 업무 보존 · __CLEAR__ 명시적 삭제 · 충돌 기본 미선택\n'+json.dumps(plan.report(),ensure_ascii=False,indent=2)+'\n\n'+'\n'.join(map(str,plan.issues)));report.configure(state='disabled');panes.add(details,weight=1)
+        def cancel():
+            win.destroy();self.note('엑셀 가져오기 취소 · 기존 프로젝트를 유지합니다.')
         def apply():
             if self.busy: return
             try:
                 if any(c.conflict and c.key in selected for c in plan.changes) and not ack.get(): raise ValueError('선택한 충돌 덮어쓰기를 확인하세요.')
                 new=self.store.apply_import(plan,selected,reason.get(),ack.get())
-                self.p=new;self.result=None;self.source_path=Path(plan.filename).resolve();self.sync();self.resulttext.delete('1.0','end');win.destroy();self.note('선택한 변경을 하나의 트랜잭션으로 적용했습니다.')
+                self.p=new;self.result=None;self.source_path=Path(plan.filename).resolve();self.search.set('');self.sync()
+                message=f"가져오기 완료: {new['id']} / 작업 {len(new['tasks'])}개 / 시작일 {new['start']} / 기준일 {new['asof']}"
+                self.resulttext.delete('1.0','end');self.resulttext.insert('1.0',message+'\n시뮬레이션 실행을 눌러 새 프로젝트를 계산하세요.')
+                self.tabs.select(self.tasktab);win.destroy();self.note(message+' · 시뮬레이션을 실행하세요.')
             except Exception as exc: messagebox.showerror('적용 차단',str(exc),parent=win)
-        button=ttk.Button(win,text='선택한 변경 적용',command=apply);button.pack(pady=8)
+        button=ttk.Button(controls,text='선택한 변경 적용',style='Primary.TButton',command=apply);button.grid(row=0,column=2,rowspan=2,sticky='ns',padx=(0,8))
+        ttk.Button(controls,text='취소',command=cancel).grid(row=0,column=3,rowspan=2,sticky='ns')
         if any(i.severity=='오류' for i in plan.issues): button.state(['disabled'])
+        win.protocol('WM_DELETE_WINDOW',cancel)
+        return win
 
     def export_file(self):
         if self.busy: return
