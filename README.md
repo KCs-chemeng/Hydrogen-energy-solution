@@ -15,4 +15,4 @@ Python/Tkinter 기반 단일 사용자 프로젝트 일정·업무 이력관리 
 
 ## 2027년 1월 착수 일정 엑셀
 
-[일정만 포함한 Import용 엑셀 다운로드](https://github.com/KCs-chemeng/Hydrogen-energy-solution/raw/refs/heads/main/schedules/LNG_CO2_2027_01_Schedule_Import.xlsx) — 433개 작업, 38개 모듈 전체 적용. 담당자 및 원본 참고자료 제외. [파일 안내](schedules/README.md).
+[최신 100개 업무·Skid 발주형 Import 엑셀 다운로드](https://github.com/KCs-chemeng/Hydrogen-energy-solution/raw/refs/heads/main/schedules/LNG_CO2_2027_01_100Tasks_Import.xlsx) — 9개 Skid/조달 Package, 건축허가용 도서 선행·상세설계 후속. [변경 브리핑](schedules/LNG_CO2_2027_100Tasks_BRIEFING.md). 기존 433개 파일은 별도 보존합니다.

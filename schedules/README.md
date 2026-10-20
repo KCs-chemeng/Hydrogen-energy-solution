@@ -1,12 +1,19 @@
-# 2027년 1월 착수 계산용 일정
+# 2027년 1월 착수 일정
 
-[엑셀 다운로드](https://github.com/KCs-chemeng/Hydrogen-energy-solution/raw/refs/heads/main/schedules/LNG_CO2_2027_01_Schedule_Import.xlsx)
+[**최신 R2 — 100개 업무·Skid 발주형 엑셀 다운로드**](https://github.com/KCs-chemeng/Hydrogen-energy-solution/raw/refs/heads/main/schedules/LNG_CO2_2027_01_100Tasks_Import.xlsx)
 
-- Project Schedule Lab v0.2.1의 PSL-2 Import 형식.
-- 시작일·분석 기준일 2027-01-01, 작업 433개, 모듈 38개 전체 적용, 선행관계 746개.
-- 작업·기간·관계·달력과 계산된 예측 결과만 포함합니다. 담당·산출물·비고는 공란이며 원본 참고·실적·출처 시트와 확장 근거 열은 포함하지 않습니다.
-- 전체 모듈 적용은 계산을 위한 가정입니다. 계약 목표일과 승인된 기준 일정은 지정하지 않았습니다.
-- 원본 가정 O/M/P와 달력일 기준을 유지했습니다. M 기준 예측 및 5,000회 몬테카를로 결과는 확정 납기가 아닙니다.
-- 검증: Import 오류·경고 0건, SQLite 저장·재읽기, 재Import 무변경 및 5,000회 재계산 통과. 개인명·이메일·휴대폰 문자열 검사 통과, 댓글·하이퍼링크·외부 연결 없음.
+[변경 브리핑](LNG_CO2_2027_100Tasks_BRIEFING.md)
 
-앱에서 **엑셀 가져오기 → 신규 프로젝트 → 선택한 변경 적용** 후 시뮬레이션을 실행하세요. 기존 프로젝트와 합치지 않는 신규 프로젝트 파일입니다.
+- LNG 기반 수소생산·탄소포집 프로젝트. 시작·기준일 2027-01-01.
+- 100개 업무 / 16개 모듈 / 9개 Skid·발주 Package의 조달 45개 업무.
+- 레이아웃 → 건축허가용 도서 선행 → 상세설계 후속, 허가 심사와 병행.
+- Package별 발주·Vendor 자료·제작승인·제작·FAT/입고 및 독립 설치.
+- Import 오류·경고 0건, 데이터 시험 9개·실제 GUI Import·5,000회 계산 검증.
+- 담당자 개인명·원본 참고/실적 자료 제외. 납기·Package 경계·허가 적용성은 검토 전 계산용 가정.
+
+앱 v0.2.2에서 **엑셀 가져오기 → 상단 선택한 변경 적용** 후 작업 수 100개와 프로젝트 ID `LNG-CC-202701-R2-100`을 확인하세요. 기존 433개 프로젝트와 별도로 생성됩니다.
+
+구 버전은 [기존 433개 일정](LNG_CO2_2027_01_Schedule_Import.xlsx)으로 보존했습니다. 기존 데이터나 승인 이력을 지우지 않습니다.
+
+재생성: `python schedules/build_100_task_schedule.py` (앱의 numpy/openpyxl 환경 사용).
+검증: `python -m unittest discover -s schedules -p test_100_task_schedule.py -v`.

@@ -1,0 +1,14 @@
+test_all_relations_hold_in_every_sample (test_100_task_schedule.RevisedScheduleTests.test_all_relations_hold_in_every_sample) ... ok
+test_constant_omp_shared_engine_and_repeatability (test_100_task_schedule.RevisedScheduleTests.test_constant_omp_shared_engine_and_repeatability) ... ok
+test_gas_introduction_and_terminal_gate (test_100_task_schedule.RevisedScheduleTests.test_gas_introduction_and_terminal_gate) ... ok
+test_layout_permit_drawings_then_detail_without_waiting_for_full_design (test_100_task_schedule.RevisedScheduleTests.test_layout_permit_drawings_then_detail_without_waiting_for_full_design) ... ok
+test_nine_packages_five_steps_and_independent_installation (test_100_task_schedule.RevisedScheduleTests.test_nine_packages_five_steps_and_independent_installation) ... ok
+test_old_scope_is_mapped_with_no_original_deletion (test_100_task_schedule.RevisedScheduleTests.test_old_scope_is_mapped_with_no_original_deletion) ... ok
+test_real_workbook_import_noop_and_old_project_preserved (test_100_task_schedule.RevisedScheduleTests.test_real_workbook_import_noop_and_old_project_preserved) ... ok
+test_scope_ids_and_privacy (test_100_task_schedule.RevisedScheduleTests.test_scope_ids_and_privacy) ... ok
+test_workbook_schedule_only_and_reference_traceability (test_100_task_schedule.RevisedScheduleTests.test_workbook_schedule_only_and_reference_traceability) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 1.320s
+
+OK
