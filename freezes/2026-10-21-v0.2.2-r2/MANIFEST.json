@@ -1,0 +1,413 @@
+{
+  "format": "PSL-FREEZE-1",
+  "program": "Project Schedule Lab",
+  "application_version": "0.2.2",
+  "schedule_revision": "R2 / 100 tasks / 16 modules / 9 procurement packages",
+  "snapshot_commit": "b31d9fe7eb97d0435b6d5ac1b7cb9c75e27b04d5",
+  "snapshot_tree": "efb459657deaeaf1dea343e2a426a8c5e759c8c0",
+  "snapshot_commit_time": "2026-10-20T02:43:16Z",
+  "recorded_at": "2026-10-21T18:41:28+09:00",
+  "timezone": "Asia/Seoul",
+  "freeze_tag": "copyright-freeze-2026-10-21-v0.2.2-r2",
+  "repository": "https://github.com/KCs-chemeng/Hydrogen-energy-solution",
+  "archive": {
+    "file": "ProjectScheduleLab-v0.2.2-R2-source-freeze.zip",
+    "bytes": 1776515,
+    "sha256": "a457cb6b847a8ff95b90233471bb3498c4d50753a83e9ae5ebb790a5df6f94a3",
+    "prefix": "ProjectScheduleLab-v0.2.2-R2/"
+  },
+  "tracked_files": 53,
+  "python_files": 15,
+  "python_lines_including_comments_and_blanks": 2878,
+  "copyright_owner": "Not specified; applicant must supply verified identity",
+  "third_party_components": [
+    "Python/Tcl/Tk runtime",
+    "numpy",
+    "openpyxl",
+    "et-xmlfile"
+  ],
+  "prior_validation": {
+    "application": "49 tests passed, including 6 GUI tests; reports/test_results_0.2.2.txt in snapshot",
+    "schedule": "9 tests passed; schedules/100Tasks_test_results.txt in snapshot",
+    "rerun_during_freeze": false
+  },
+  "freeze_verification": [
+    "Exact tracked blob equality",
+    "ZIP CRC",
+    "All archived file SHA-256 hashes",
+    "Python AST parsing"
+  ],
+  "files": [
+    {
+      "path": "Project_Schedule_Lab_v0.1.0/Project_Schedule_Lab_v0.1.0/.gitignore",
+      "mode": "100644",
+      "git_blob": "8a185bcd4a66d84697ec2c27339a9d6968219d7c",
+      "bytes": 96,
+      "sha256": "603bf4fde1609dfa444af2b1bf16873e99d377fdaef69924c67ebeed5521374a"
+    },
+    {
+      "path": "Project_Schedule_Lab_v0.1.0/Project_Schedule_Lab_v0.1.0/CHANGELOG.md",
+      "mode": "100644",
+      "git_blob": "2478c501d88040dc7cc03e0a09e6f200660dcc11",
+      "bytes": 2440,
+      "sha256": "a0f80ce9982f01af3e0789e5c88567fa10980e85a993726b0bd9e741b937ac58"
+    },
+    {
+      "path": "Project_Schedule_Lab_v0.1.0/Project_Schedule_Lab_v0.1.0/README_KO.md",
+      "mode": "100644",
+      "git_blob": "836d8a0db53ae0b4ccb86e8cade1f8333e242479",
+      "bytes": 19198,
+      "sha256": "2f203cca17ffcac42591ed9056d4050646fa0c8064dd80a7dba5b55802fc857e"
+    },
+    {
+      "path": "Project_Schedule_Lab_v0.1.0/Project_Schedule_Lab_v0.1.0/__pycache__/engine.cpython-314.pyc",
+      "mode": "100644",
+      "git_blob": "6c665f0f04da8b4086bdeff2d5705ba5764f80af",
+      "bytes": 16341,
+      "sha256": "591734d07885eda20f053114e45647694ef70c6e629bceff60dae63f4293ce34"
+    },
+    {
+      "path": "Project_Schedule_Lab_v0.1.0/Project_Schedule_Lab_v0.1.0/__pycache__/excel_io.cpython-314.pyc",
+      "mode": "100644",
+      "git_blob": "5b183c30bdc1303b9c88a637d2ee16458bd88845",
+      "bytes": 17530,
+      "sha256": "6de0e0669779c0db2e20b99eebfd0e41c28ca9bb9245873bb2dfb5ff8b4da38e"
+    },
+    {
+      "path": "Project_Schedule_Lab_v0.1.0/Project_Schedule_Lab_v0.1.0/app.py",
+      "mode": "100644",
+      "git_blob": "22cdc4653d1b7dfcd1a1c6a93581f8a7e8899f7f",
+      "bytes": 22989,
+      "sha256": "22d232e6cb97ebefd72c44db0cdd7e296f3cdf34a9309fbd6ea3ac02b38c44b4"
+    },
+    {
+      "path": "Project_Schedule_Lab_v0.1.0/Project_Schedule_Lab_v0.1.0/build_release.py",
+      "mode": "100644",
+      "git_blob": "fa4644e10b05467c50d18d4d4fb59f48cf266445",
+      "bytes": 1160,
+      "sha256": "d26b3985250af3ceb98f009109556503db0339afc649ce9b19ff8b153a3150bd"
+    },
+    {
+      "path": "Project_Schedule_Lab_v0.1.0/Project_Schedule_Lab_v0.1.0/common_Rev1.xlsx",
+      "mode": "100644",
+      "git_blob": "468a954ec069a6485c9ab199603b7f546e8dcedb",
+      "bytes": 593408,
+      "sha256": "2478d7a3b272d04f9d6e1bf91848056c50674d83ca052123024586f402af2870"
+    },
+    {
+      "path": "Project_Schedule_Lab_v0.1.0/Project_Schedule_Lab_v0.1.0/engine.py",
+      "mode": "100644",
+      "git_blob": "b5d840fe84e692d86c2264e8734215695f850033",
+      "bytes": 20946,
+      "sha256": "baf6a7e32890d33d1470a625530dffd3d0a79c1e99462b265f4bda1ffe91f168"
+    },
+    {
+      "path": "Project_Schedule_Lab_v0.1.0/Project_Schedule_Lab_v0.1.0/examples/calendar_example.xlsx",
+      "mode": "100644",
+      "git_blob": "383d6bdce95dfde8108de0682dadd682e9a80e31",
+      "bytes": 13740,
+      "sha256": "0a7231f9cdb415836dd68ea81d364c60c6ccda0e7ad04f5e8343249fc4f52f56"
+    },
+    {
+      "path": "Project_Schedule_Lab_v0.1.0/Project_Schedule_Lab_v0.1.0/examples/expected_small.json",
+      "mode": "100644",
+      "git_blob": "ed5e3fa2793e7cccb20527dd37d669f0b188fa68",
+      "bytes": 288,
+      "sha256": "76e8044467b330918a3361c586b801fc12b82e7cb1be0dc716e67c9d70e60890"
+    },
+    {
+      "path": "Project_Schedule_Lab_v0.1.0/Project_Schedule_Lab_v0.1.0/examples/standard_template.xlsx",
+      "mode": "100644",
+      "git_blob": "03c041f2f6e6aac4b7a4bf7503526c5af9e1f681",
+      "bytes": 11693,
+      "sha256": "ca5fa6fa1091655e21c3c0bad7271bc8550f08223eeccee6e8c5bff120f000ff"
+    },
+    {
+      "path": "Project_Schedule_Lab_v0.1.0/Project_Schedule_Lab_v0.1.0/examples/validation_small.xlsx",
+      "mode": "100644",
+      "git_blob": "03e7d222a77f3b7f64fc8cea87ae55366631d044",
+      "bytes": 14035,
+      "sha256": "052d2e8a89ca06c276e0a352f08bfa651b71cc90b24c75996b5cca6a2f68f1e4"
+    },
+    {
+      "path": "Project_Schedule_Lab_v0.1.0/Project_Schedule_Lab_v0.1.0/excel_io.py",
+      "mode": "100644",
+      "git_blob": "a4cc2adec4336f1d35e5dbfed76a79863da3153c",
+      "bytes": 15480,
+      "sha256": "c2d1e57d1f37c99d1ab160ffa88f332158fcf8d97a813341dca17069cb8a94ca"
+    },
+    {
+      "path": "Project_Schedule_Lab_v0.1.0/Project_Schedule_Lab_v0.1.0/generate_examples.py",
+      "mode": "100644",
+      "git_blob": "80e90a9abbd464f838278a5d65843ca9d796bb87",
+      "bytes": 5511,
+      "sha256": "c127d3322a2bc96bc178bb58319caee8cf7d563526e26c4fb2b3d90e5d18883c"
+    },
+    {
+      "path": "Project_Schedule_Lab_v0.1.0/Project_Schedule_Lab_v0.1.0/importing.py",
+      "mode": "100644",
+      "git_blob": "38150632282cf2bba553af838ea23da7425aed3f",
+      "bytes": 10159,
+      "sha256": "9514be09c2184e251f611463d745038b087359c285c33f9312626c1daf695309"
+    },
+    {
+      "path": "Project_Schedule_Lab_v0.1.0/Project_Schedule_Lab_v0.1.0/install.bat",
+      "mode": "100644",
+      "git_blob": "4a222b378da9884ede6a3a9c2f125544d279c747",
+      "bytes": 750,
+      "sha256": "3d0dc40cea08d60f2380a2915dfe74ec9537b9a9e4a78d37472e26a3fc852d46"
+    },
+    {
+      "path": "Project_Schedule_Lab_v0.1.0/Project_Schedule_Lab_v0.1.0/install.sh",
+      "mode": "100755",
+      "git_blob": "398fbc28657532c109446b1e1a660ec05c18947e",
+      "bytes": 493,
+      "sha256": "14f00fcc3d6dba6b01b07586d897ad3eba2cadaa6d108c0c0e8a4f733b03c794"
+    },
+    {
+      "path": "Project_Schedule_Lab_v0.1.0/Project_Schedule_Lab_v0.1.0/legacy_excel.py",
+      "mode": "100644",
+      "git_blob": "e1bcc5a695ddd3be748f1591835c8bb1e162ab5a",
+      "bytes": 3973,
+      "sha256": "a14a42897f296963988ff7245259db1469263899ff5e7a4da37da5f36a3cde4e"
+    },
+    {
+      "path": "Project_Schedule_Lab_v0.1.0/Project_Schedule_Lab_v0.1.0/model.py",
+      "mode": "100644",
+      "git_blob": "5c9271fcd6682cea601ca58e4ef8153d1744177b",
+      "bytes": 3375,
+      "sha256": "2e0ff5a181968557e208fa6656ff264b633235b4cb44220dae2f23ade46dcba6"
+    },
+    {
+      "path": "Project_Schedule_Lab_v0.1.0/Project_Schedule_Lab_v0.1.0/reports/install_results.txt",
+      "mode": "100644",
+      "git_blob": "a8ad16c52da45415ddd7d0260cd2cbc5dc2884f4",
+      "bytes": 5576,
+      "sha256": "15b392f8ecd2fc9b4ff0254a55fe1a8c9d2061252ea1a8896d4aba7f7e3499a9"
+    },
+    {
+      "path": "Project_Schedule_Lab_v0.1.0/Project_Schedule_Lab_v0.1.0/reports/reference_import_report.json",
+      "mode": "100644",
+      "git_blob": "2e6deb5fd74c28a1c6835b3f6553065bd601ae52",
+      "bytes": 2703,
+      "sha256": "24ead07930cf71811920f5256a8288581cdef74c18f74166bc1163bed1fa1b64"
+    },
+    {
+      "path": "Project_Schedule_Lab_v0.1.0/Project_Schedule_Lab_v0.1.0/reports/reference_import_report.md",
+      "mode": "100644",
+      "git_blob": "e22d124b984a3902c82c0ec983ae04a25bfafb40",
+      "bytes": 2687,
+      "sha256": "ca5742f495b080956640562b99fc627e5fc0080cc94fb79e67dea823e7afc8f1"
+    },
+    {
+      "path": "Project_Schedule_Lab_v0.1.0/Project_Schedule_Lab_v0.1.0/reports/test_results.txt",
+      "mode": "100644",
+      "git_blob": "9035c0aa10b4be627c40ad47bc666e96643ac07c",
+      "bytes": 4753,
+      "sha256": "764c035fe012516f8a868369fdf523826556a6897a09337df2ce9b5f843e6cf6"
+    },
+    {
+      "path": "Project_Schedule_Lab_v0.1.0/Project_Schedule_Lab_v0.1.0/reports/test_results_0.2.1.txt",
+      "mode": "100644",
+      "git_blob": "ad018adf5313fc435f30501f22cc617529225370",
+      "bytes": 4910,
+      "sha256": "bd8dce98ee49d4252448495bef81a5b8b6891c9ab8ce494ea3e3d2c4e4ee6564"
+    },
+    {
+      "path": "Project_Schedule_Lab_v0.1.0/Project_Schedule_Lab_v0.1.0/reports/test_results_0.2.2.txt",
+      "mode": "100644",
+      "git_blob": "f4d18699c7cd45fa32ab77a4ec072681712deee5",
+      "bytes": 5224,
+      "sha256": "3b328dfa90b8f775318f62e655234e22817f7b67f50af444388bd4f553517be8"
+    },
+    {
+      "path": "Project_Schedule_Lab_v0.1.0/Project_Schedule_Lab_v0.1.0/reports/validation.md",
+      "mode": "100644",
+      "git_blob": "0b32a12796b15a41d3ccc68c96ad545bff4f8702",
+      "bytes": 3465,
+      "sha256": "cec40be2ab67a60f5931c881d65c175aeff353ca4fe67e27678752e3f6ef8ca5"
+    },
+    {
+      "path": "Project_Schedule_Lab_v0.1.0/Project_Schedule_Lab_v0.1.0/reports/validation_0.2.1.md",
+      "mode": "100644",
+      "git_blob": "e64f0727627e31b9060031788aa3497d22be8aed",
+      "bytes": 1981,
+      "sha256": "1a8aad6f40970d05a6595b216db16f6f661c3113c67a952fff940ee0b74ce829"
+    },
+    {
+      "path": "Project_Schedule_Lab_v0.1.0/Project_Schedule_Lab_v0.1.0/reports/validation_0.2.2.md",
+      "mode": "100644",
+      "git_blob": "32581278688f3ce9c4d926a950c25c6db7a5cb8d",
+      "bytes": 2524,
+      "sha256": "4d66138932809d0056da18d768ac6b9758f5a841e6e52eb08a12088e98f27f6c"
+    },
+    {
+      "path": "Project_Schedule_Lab_v0.1.0/Project_Schedule_Lab_v0.1.0/requirements-validated.txt",
+      "mode": "100644",
+      "git_blob": "e3dde8d68e35f11101f404acc9d2816e7de6fe11",
+      "bytes": 127,
+      "sha256": "301ace0b1a19a6c94559e9f06f8b96d42a0cbd13ac3849097d5a2ed3e299aad2"
+    },
+    {
+      "path": "Project_Schedule_Lab_v0.1.0/Project_Schedule_Lab_v0.1.0/requirements.txt",
+      "mode": "100644",
+      "git_blob": "6b06d277f374f06b995a986329153f06086881d2",
+      "bytes": 32,
+      "sha256": "05afd89909bb8e30d01b346854d8cc1883aa609289232f939532250e8774503c"
+    },
+    {
+      "path": "Project_Schedule_Lab_v0.1.0/Project_Schedule_Lab_v0.1.0/start.bat",
+      "mode": "100644",
+      "git_blob": "067614ddd5e102f62179698306a0c108aa82ccad",
+      "bytes": 258,
+      "sha256": "82070940372ff860bcdfd8750205c8db3351c57e2eb152a77ca6afa4b3638bfb"
+    },
+    {
+      "path": "Project_Schedule_Lab_v0.1.0/Project_Schedule_Lab_v0.1.0/start.sh",
+      "mode": "100755",
+      "git_blob": "6d65fade8208edd57bc958a68a37c4730aeeff63",
+      "bytes": 327,
+      "sha256": "4220a1d0d92a9b4569914d19695c56706d3e7b7796e086f70cecb132809c1eef"
+    },
+    {
+      "path": "Project_Schedule_Lab_v0.1.0/Project_Schedule_Lab_v0.1.0/storage.py",
+      "mode": "100644",
+      "git_blob": "b97cc07f50a86349759b2a523d01d6b84dcffebf",
+      "bytes": 16506,
+      "sha256": "007a9ac05732a38b0a3c00127ffb70af27e766a2a27d5a50d5cde65d488af932"
+    },
+    {
+      "path": "Project_Schedule_Lab_v0.1.0/Project_Schedule_Lab_v0.1.0/test_core.py",
+      "mode": "100644",
+      "git_blob": "38d0f89b266ced8c2948c9b800605fc84594d992",
+      "bytes": 2718,
+      "sha256": "ef276e89642693930ece1114c52a2def9a5318f6d1322937351c2ae7162f95a0"
+    },
+    {
+      "path": "Project_Schedule_Lab_v0.1.0/Project_Schedule_Lab_v0.1.0/test_gui.py",
+      "mode": "100644",
+      "git_blob": "46f51c05578c8dc5a1a9f9b3ed8d4e60dee690a3",
+      "bytes": 9182,
+      "sha256": "6aadafad7bc8920c48dbe7c6f1010d2a97aa063b7471ca027ef28a6ebf90fcf8"
+    },
+    {
+      "path": "Project_Schedule_Lab_v0.1.0/Project_Schedule_Lab_v0.1.0/test_v2.py",
+      "mode": "100644",
+      "git_blob": "765b36771da204195cb97ca3a432fa9783d45ac2",
+      "bytes": 22541,
+      "sha256": "b9e4f50a5dd51a1e8cc3d2845da5516fdef4c49abda1e2b6ecae4101c7d04f70"
+    },
+    {
+      "path": "Project_Schedule_Lab_v0.1.0/Project_Schedule_Lab_v0.1.0/ui_v2.py",
+      "mode": "100644",
+      "git_blob": "718d3e3f86a2b9dc2ee10db164209f3bf8005ca9",
+      "bytes": 33905,
+      "sha256": "1fcbbb843d7aa78e7c90067e6996869cb7d3aeee299359ff10557a823286d36b"
+    },
+    {
+      "path": "README.md",
+      "mode": "100644",
+      "git_blob": "9f4dc477c04342dfc8c2b31f40d5aec31f878821",
+      "bytes": 1742,
+      "sha256": "580f6a56d8ba09df152e1480156f8f3465ab0384ad744de34e555e8abf4c18bb"
+    },
+    {
+      "path": "releases/ProjectScheduleLab-0.2.0.zip",
+      "mode": "100644",
+      "git_blob": "27dbf9cefd18ffe1022b8c46d6da4679d612d4d7",
+      "bytes": 383662,
+      "sha256": "591afd3f51010b6a47daeb07b0424f409f587c5c40145f530096fa09ddda66d8"
+    },
+    {
+      "path": "releases/ProjectScheduleLab-0.2.0.zip.sha256",
+      "mode": "100644",
+      "git_blob": "f6c27911ee1ecebd95894eed47dbda6c9955be8b",
+      "bytes": 95,
+      "sha256": "19a240fa29a3f77e850252e8a29db53472265bccdcb556b691d6001a8797125c"
+    },
+    {
+      "path": "releases/ProjectScheduleLab-0.2.1.zip",
+      "mode": "100644",
+      "git_blob": "2142ca680087d649c8a48f3dea19e91a165b1133",
+      "bytes": 387544,
+      "sha256": "c7a72e91134b26291134c2984c06d45514ba7f20c43c8c678853bb5b7690fd0d"
+    },
+    {
+      "path": "releases/ProjectScheduleLab-0.2.1.zip.sha256",
+      "mode": "100644",
+      "git_blob": "be4b40ace25c6a91f8110031e830ea042d9b68c6",
+      "bytes": 95,
+      "sha256": "51df6c4e969c5a091776f37a1f38e3ccefdba42143c1fbefe46f9717f15d845e"
+    },
+    {
+      "path": "releases/ProjectScheduleLab-0.2.2.zip",
+      "mode": "100644",
+      "git_blob": "79d09cbaa5e9adb59d05c65624523c1fd5109aad",
+      "bytes": 392470,
+      "sha256": "a931cca39e3cdfe0fe9d74770edcc9bb191d78f3f4801bc8281ecfa3d3044fc1"
+    },
+    {
+      "path": "releases/ProjectScheduleLab-0.2.2.zip.sha256",
+      "mode": "100644",
+      "git_blob": "7a98096518885e98addf493ef6ea6fe5097b77be",
+      "bytes": 95,
+      "sha256": "1ecb474e0711f529cec5bae3f33417d2042dd4b4a8aecae4a1f87d9f86268509"
+    },
+    {
+      "path": "schedules/100Tasks_test_results.txt",
+      "mode": "100644",
+      "git_blob": "6d8a84cd219dc41413e3e1f18367f8119afba2bd",
+      "bytes": 1477,
+      "sha256": "9eede48f2f26414aed7164a83460ab6f5eeea9f822aa25a2dca6490e5d93f8ec"
+    },
+    {
+      "path": "schedules/LNG_CO2_2027_01_100Tasks_Import.xlsx",
+      "mode": "100644",
+      "git_blob": "afff23e7c5e0acd99db4c6a441946e1093d08cb0",
+      "bytes": 73004,
+      "sha256": "2ee5d84dff872c422eb33b6b2894dc5e900dc72ae1a63df42a4164c03d45434a"
+    },
+    {
+      "path": "schedules/LNG_CO2_2027_01_Schedule_Import.xlsx",
+      "mode": "100644",
+      "git_blob": "8ad227710b76843488919806608af4254949344b",
+      "bytes": 125227,
+      "sha256": "c099d3647b17840d4ae410efd991b2d97dac36980f682e352efaf03da78ba730"
+    },
+    {
+      "path": "schedules/LNG_CO2_2027_100Tasks_BRIEFING.md",
+      "mode": "100644",
+      "git_blob": "d3db8cb8d687e82accdb7ba57b90ee783663ae88",
+      "bytes": 6585,
+      "sha256": "e79827a6e79cb035d8c1f65a6af5703ffcde57bd2765995aaf289896237a8b4d"
+    },
+    {
+      "path": "schedules/LNG_CO2_2027_100Tasks_validation.json",
+      "mode": "100644",
+      "git_blob": "2c0c8a257f9145d5c7ce1e716452c53fd307a7fd",
+      "bytes": 1149,
+      "sha256": "51c72837797c9f163794d44af899b22ca889d2e974323f919ab93c86c22b49fa"
+    },
+    {
+      "path": "schedules/README.md",
+      "mode": "100644",
+      "git_blob": "719992890b70ce87fcb9868897c8014465578b03",
+      "bytes": 1424,
+      "sha256": "11d6954eb70fd89cb0ac694d73c67caef1ad45c691f0e0b3ea0eafaaf17d963c"
+    },
+    {
+      "path": "schedules/build_100_task_schedule.py",
+      "mode": "100644",
+      "git_blob": "4791fcd04087beb6db3acd040c53c41973112958",
+      "bytes": 28472,
+      "sha256": "d17119d0ba9c9b3e5a5db92d1554e80301dab5f19996ff2d106fb406081250c2"
+    },
+    {
+      "path": "schedules/test_100_task_schedule.py",
+      "mode": "100644",
+      "git_blob": "4888edf29cb574d627c709b5bf238abb94ef6f34",
+      "bytes": 6315,
+      "sha256": "94f86bba3d31a8040d69e9c99d459d4c4c3fa113b799fdf4abdade8164baa392"
+    }
+  ]
+}

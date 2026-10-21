@@ -1,5 +1,7 @@
 # Hydrogen-energy-solution
 
+**등록 준비용 버전 동결:** 앱 v0.2.2 + 100업무 일정 R2 / 2026-10-21. [고정 태그·동결 패키지·기록](FREEZE.md).
+
 Python/Tkinter 기반 단일 사용자 프로젝트 일정·업무 이력관리 도구입니다. 현재 프로그램·계산 엔진 버전은 **0.2.2**이며 기존 소스 디렉터리 이름은 유지했습니다.
 
 - [설치·실행·데이터 이전·검수 안내](Project_Schedule_Lab_v0.1.0/Project_Schedule_Lab_v0.1.0/README_KO.md)
